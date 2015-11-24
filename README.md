@@ -35,6 +35,7 @@
 - [ ] Ability to save output data into a text file
 - [ ] Add more settings; Handshake, CTS and DSR
 - [ ] Ability to send data within interval time set
+- [ ] _Still thinking..._
 
 ## License
 
