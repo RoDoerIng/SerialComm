@@ -47,7 +47,7 @@ To contribute to the code, **fork** this repository (`master` branch), realize y
 
 ## License
 
-Released under [MIT license](LICENSE.md)
+Released as an open source software under [MIT license](LICENSE.md)
 
 
 
