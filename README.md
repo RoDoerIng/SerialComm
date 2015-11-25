@@ -51,8 +51,4 @@ To contribute to the code, **fork** this repository (`master` branch), realize y
 
 ## License
 
-Released as an open source software under [MIT license](LICENSE.md)
-
-
-
-
+Develop by [Heiswayi Nrird](http://heiswayi.github.io) and released as an open source software under [MIT license](LICENSE.md).
