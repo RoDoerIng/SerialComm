@@ -43,6 +43,10 @@ You can [download and install](http://nlog-project.org/download) it or just add 
 - [ ] Ability to send data within interval time set
 - [ ] _Still thinking..._
 
+## Changelogs
+
+Go to [**CHANGELOG.md**](CHANGELOG.md) file for the development changelogs.
+
 ## Contributions
 
 If you have any question regarding this project, or found a bug in the source code, feel free to [report it here](https://github.com/heiswayi/SerialComm/issues). All you need to do is [create an issue](https://github.com/heiswayi/SerialComm/issues/new) there.
