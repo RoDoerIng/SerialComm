@@ -45,7 +45,7 @@ You can [download and install](http://nlog-project.org/download) it or just add 
 
 ## Changelogs
 
-Go to [**CHANGELOG.md**](CHANGELOG.md) file for the development changelogs.
+Check [CHANGELOG.md](CHANGELOG.md) file for the detailed development changelogs.
 
 ## Contributions
 
