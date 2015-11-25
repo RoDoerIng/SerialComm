@@ -39,6 +39,12 @@ You can [download and install](http://nlog-project.org/download) it or just add 
 - [ ] Ability to send data within interval time set
 - [ ] _Still thinking..._
 
+## Contributions
+
+If you have any question regarding this project, or found a bug in the source code, feel free to [report it here](https://github.com/heiswayi/SerialComm/issues). All you need to do is [create an issue](https://github.com/heiswayi/SerialComm/issues/new) there.
+
+To contribute to the code, **fork** this repository (`master` branch), realize your ideas, and then **create a new pull request**.
+
 ## License
 
 Released under [MIT license](LICENSE.md)
