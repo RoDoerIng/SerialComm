@@ -4,6 +4,10 @@
 
 ![Screenshot](http://i.imgur.com/FSliKIX.png)
 
+## Downloads
+
+Go to [**download page**](https://github.com/heiswayi/SerialComm/releases) for more details.
+
 ## Prerequisites
 
 - [Visual Studio IDE](https://www.visualstudio.com/en-us/downloads/download-visual-studio-vs.aspx) (2013 and above)
