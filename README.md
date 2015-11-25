@@ -13,23 +13,7 @@
 
 - [NLog](http://nlog-project.org/)
 
-I don't provide NLog binary file in the source code. Please download it at your own.
-
-If your Visual Studio already have NuGet Package Manager, you can re-install the package via Package Manager Console.
-
-```
-PM> Update-Package -Reinstall
-```
-
-Or you may just install it one by one.
-
-```
-PM> Install-Package NLog -Version 4.2.1
-```
-
-```
-PM> Install-Package NLog.Config
-```
+You can [download and install](http://nlog-project.org/download) it or just add it through [NuGet](https://www.nuget.org/profiles/jkowalski) in Visual Studio.
 
 ## Features
 
