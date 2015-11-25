@@ -1,12 +1,12 @@
 # SerialComm Monitor v1 Source Code
 
-**SerialComm Monitor** is a serial communication application based on `SerialPort` class, built in C# WPF with MVVM design pattern to send (write) or receive (read) data string from a serial communication physical interface.
+**SerialComm Monitor** is a serial communication application based on `SerialPort` class, built in C# WPF with MVVM design pattern to send (write) or receive (read) data string to/from a serial communication physical interface connected via RS232 or USB to the computer (Windows OS).
 
 ![Screenshot](http://i.imgur.com/FSliKIX.png)
 
 ## Downloads
 
-Go to [**download page**](https://github.com/heiswayi/SerialComm/releases) for more details.
+Go to [**releases page**](https://github.com/heiswayi/SerialComm/releases) for more details.
 
 ## Prerequisites
 
@@ -27,13 +27,13 @@ You can [download and install](http://nlog-project.org/download) it or just add 
   - Selectable parities
   - Selectable data bits
   - Selectable stop bits
-  - Enable/disable Data Termina Ready (DTR)
+  - Enable/disable Data Terminal Ready (DTR)
   - Enable/disable Request To Send (RTS)
 - Send (write) data string to serial port
 - Receive or monitor (read) data sent from serial port
 - Line ending options
 - Autoscroll output box
-- Metro-like application skin
+- Dark Metro-like application skin
 
 ## TODO
 
