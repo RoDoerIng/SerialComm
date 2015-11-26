@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO.Ports;
+using System.Management;
 namespace SerialComm.Model
 {
     public class SerialPortSettingsModel : SingletonBase<SerialPortSettingsModel>
@@ -14,6 +16,22 @@ namespace SerialComm.Model
         {
             public string DeviceID { get; set; }
             public string Description { get; set; }
+        }
+
+        public ObservableCollection<SerialPortSettingsModel.CommPort> GetCommPorts()
+        {
+            var results = new ObservableCollection<SerialPortSettingsModel.CommPort>();
+            var mc = new ManagementClass("Win32_SerialPort");
+
+            foreach (var m in mc.GetInstances()) using (m)
+                {
+                    results.Add(new SerialPortSettingsModel.CommPort()
+                    {
+                        DeviceID = (string)m.GetPropertyValue("DeviceID"),
+                        Description = (string)m.GetPropertyValue("Caption")
+                    });
+                }
+            return results;
         }
         #endregion
 

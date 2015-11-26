@@ -16,12 +16,13 @@ namespace SerialComm.ViewModel
     public class SerialCommViewModel : ViewModelBase
     {
         #region Private Fields
+        private static string AppTitle = "SerialComm Monitor V1";
         private static Logger logger;
         private SerialPort _SerialPort;
         private string _InputText;
         private string _OutputText;
-        private string _SettingsCheck;
         private string _CheckConnectionStatus;
+        private string _WindowTitle;
         private ObservableCollection<SerialPortSettingsModel.CommPort> _CommPorts;
         private SerialPortSettingsModel.CommPort _SelectedCommPort;
         private List<SerialPortSettingsModel> _BaudRates;
@@ -44,6 +45,7 @@ namespace SerialComm.ViewModel
         private ICommand _Send;
         private ICommand _Clear;
         private ICommand _OpenLink;
+        private ICommand _RefreshPorts;
         #endregion
 
         #region Public Properties
@@ -67,15 +69,6 @@ namespace SerialComm.ViewModel
             }
         }
 
-        public string SettingsCheck
-        {
-            get
-            {
-                _SettingsCheck = GetSettingsCheck();
-                return _SettingsCheck;
-            }
-        }
-
         public string CheckConnectionStatus
         {
             get
@@ -85,16 +78,23 @@ namespace SerialComm.ViewModel
             }
         }
 
+        public string WindowTitle
+        {
+            get { return _WindowTitle; }
+            set
+            {
+                _WindowTitle = value;
+                OnPropertyChanged("WindowTitle");
+            }
+        }
+
         public ObservableCollection<SerialPortSettingsModel.CommPort> CommPorts
         {
-            get
+            get { return _CommPorts; }
+            set
             {
-                if (_CommPorts == null)
-                {
-                    _CommPorts = GetCommPorts();
-                    OnPropertyChanged("CommPorts");
-                }
-                return _CommPorts;
+                _CommPorts = value;
+                OnPropertyChanged("CommPorts");
             }
         }
 
@@ -105,7 +105,6 @@ namespace SerialComm.ViewModel
             {
                 _SelectedCommPort = value;
                 OnPropertyChanged("SelectedCommPort");
-                OnPropertyChanged("SettingsCheck");
             }
         }
 
@@ -126,7 +125,6 @@ namespace SerialComm.ViewModel
             {
                 _SelectedBaudRate = value;
                 OnPropertyChanged("SelectedBaudRate");
-                OnPropertyChanged("SettingsCheck");
             }
         }
 
@@ -147,7 +145,6 @@ namespace SerialComm.ViewModel
             {
                 _SelectedParity = value;
                 OnPropertyChanged("SelectedParity");
-                OnPropertyChanged("SettingsCheck");
             }
         }
         
@@ -168,7 +165,6 @@ namespace SerialComm.ViewModel
             {
                 _SelectedStopBits = value;
                 OnPropertyChanged("SelectedStopBits");
-                OnPropertyChanged("SettingsCheck");
             }
         }
         
@@ -189,7 +185,6 @@ namespace SerialComm.ViewModel
             {
                 _SelectedDataBits = value;
                 OnPropertyChanged("SelectedDataBits");
-                OnPropertyChanged("SettingsCheck");
             }
         }
         
@@ -220,7 +215,6 @@ namespace SerialComm.ViewModel
             {
                 _IsDTR = value;
                 OnPropertyChanged("IsDTR");
-                OnPropertyChanged("SettingsCheck");
             }
         }
         
@@ -231,7 +225,6 @@ namespace SerialComm.ViewModel
             {
                 _IsRTS = value;
                 OnPropertyChanged("IsRTS");
-                OnPropertyChanged("SettingsCheck");
             }
         }
         
@@ -273,7 +266,6 @@ namespace SerialComm.ViewModel
                 _AutoscrollChecked = value;
                 OnPropertyChanged("AutoscrollChecked");
                 OnPropertyChanged("IsAutoscrollChecked");
-                OnPropertyChanged("SettingsCheck");
             }
         }
 
@@ -306,7 +298,7 @@ namespace SerialComm.ViewModel
             {
                 _Close = new RelayCommand(
                     param => StopListening(),
-                    param => StopListeningCanExecute());
+                    param => _SerialPort != null && _SerialPort.IsOpen);
                 return _Close;
             }
         }
@@ -317,7 +309,7 @@ namespace SerialComm.ViewModel
             {
                 _Send = new RelayCommand(
                     param => WriteData(),
-                    param => WriteDataCanExecute());
+                    param => _SerialPort != null && _SerialPort.IsOpen);
                 return _Send;
             }
         }
@@ -327,7 +319,7 @@ namespace SerialComm.ViewModel
             get
             {
                 _Clear = new RelayCommand(
-                    param => ClearOutputText());
+                    param => OutputText = "");
                 return _Clear;
             }
         }
@@ -337,8 +329,19 @@ namespace SerialComm.ViewModel
             get
             {
                 _OpenLink = new RelayCommand(
-                    param => OpenLinkMethod());
+                    param => System.Diagnostics.Process.Start("https://github.com/heiswayi/SerialComm"));
                 return _OpenLink;
+            }
+        }
+
+        public ICommand RefreshPorts
+        {
+            get
+            {
+                _RefreshPorts = new RelayCommand(
+                    param => RefreshPortsMethod(),
+                    param => (_SerialPort == null || !_SerialPort.IsOpen));
+                return _RefreshPorts;
             }
         }
         #endregion
@@ -349,8 +352,16 @@ namespace SerialComm.ViewModel
             logger = LogManager.GetCurrentClassLogger();
             logger.Log(LogLevel.Debug, "Application started.");
 
-            SelectedCommPort = CommPorts[0];
-
+            try
+            {
+                CommPorts = SerialPortSettingsModel.Instance.GetCommPorts();
+            }
+            catch (Exception ex)
+            {
+                logger.Log(LogLevel.Error, ex.Message);
+                logger.Log(LogLevel.Debug, "Error above occured when something's wrong with ManagementClass(\"Win32_SerialPort\") on application startup.");
+            }
+            if (CommPorts != null) SelectedCommPort = CommPorts[0];
             BaudRates = SerialPortSettingsModel.Instance.getBaudRates();
             SelectedBaudRate = 9600; // Default
             LineEndings = SerialPortSettingsModel.Instance.getLineEndings();
@@ -366,11 +377,19 @@ namespace SerialComm.ViewModel
             IsDTR = true;
             IsRTS = true;
 
+            OnPropertyChanged("CheckConnectionStatus");
+            WindowTitle = AppTitle + " (" + CheckConnectionStatus + ")";
+
             EnableDisableSettings = true;
         }
         #endregion
 
         #region Events
+        /// <summary>
+        /// Receive data event from serial port.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void DataReceivedEvent(object sender, SerialDataReceivedEventArgs e)
         {
             try
@@ -387,58 +406,40 @@ namespace SerialComm.ViewModel
         #endregion
 
         #region Public Methods
+        /// <summary>
+        /// Close port if port is open when user closes MainWindow.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         public void OnWindowClosing(object sender, CancelEventArgs e)
         {
-            if (_SerialPort != null && _SerialPort.IsOpen)
+            try
             {
-                try
+                if (_SerialPort != null && _SerialPort.IsOpen)
                 {
                     _SerialPort.Close();
                     logger.Log(LogLevel.Debug, "_SerialPort.Close() initiated on Application's closing (without pressing STOP COMMUNICATION button).");
                 }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    logger.Log(LogLevel.Error, ex.Message);
-                    logger.Log(LogLevel.Debug, "Error above occured at OnWindowClosing() method.");
-                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                logger.Log(LogLevel.Error, ex.Message);
+                logger.Log(LogLevel.Debug, "Error above occured at OnWindowClosing() method.");
             }
         }
         #endregion
 
         #region Private Methods
-        private string GetSettingsCheck()
-        {
-            var getPort = SelectedCommPort.DeviceID;
-            var getBaud = SelectedBaudRate;
-            var getConn = CheckConnectionStatus;
-            var getParity = SelectedParity;
-            var getStopBits = SelectedStopBits;
-            var getDataBits = SelectedDataBits;
-            return "PortName = " + getPort.ToString() + " | BaudRate = " + getBaud.ToString() + " | Parity = " + getParity.ToString() + " | DataBits = " + getDataBits.ToString() + " | StopBits = " + getStopBits.ToString() + " | ConnectionStatus = " + getConn + " | DTR = " + IsDTR + " | RTS = " + IsRTS + " | Autoscroll = " + AutoscrollChecked.ToString();
-        }
-
-        private ObservableCollection<SerialPortSettingsModel.CommPort> GetCommPorts()
-        {
-            var results = new ObservableCollection<SerialPortSettingsModel.CommPort>();
-            var mc = new ManagementClass("Win32_SerialPort");
-
-            foreach (var m in mc.GetInstances()) using (m)
-                {
-                    results.Add(new SerialPortSettingsModel.CommPort()
-                        {
-                            DeviceID = (string)m.GetPropertyValue("DeviceID"),
-                            Description = (string)m.GetPropertyValue("Caption")
-                        });
-                }
-            return results;
-        }
-
+        /// <summary>
+        /// Send data to serial port.
+        /// </summary>
         private void WriteData()
         {
             try
             {
                 _SerialPort.Write(InputText);
+                InputText = String.Empty;
             }
             catch (Exception ex)
             {
@@ -446,14 +447,11 @@ namespace SerialComm.ViewModel
                 logger.Log(LogLevel.Error, ex.Message);
                 logger.Log(LogLevel.Debug, "Error above occured at WriteData() method.");
             }
-            InputText = String.Empty;
         }
 
-        private bool WriteDataCanExecute()
-        {
-            return _SerialPort != null && _SerialPort.IsOpen;
-        }
-
+        /// <summary>
+        /// Initiate serial port communication.
+        /// </summary>
         private void StartListening()
         {
             try
@@ -461,7 +459,15 @@ namespace SerialComm.ViewModel
                 _SerialPort = new SerialPort(SelectedCommPort.DeviceID, SelectedBaudRate, SelectedParity, SelectedDataBits, SelectedStopBits);
                 _SerialPort.DataReceived += new SerialDataReceivedEventHandler(DataReceivedEvent);
                 _SerialPort.Open();
+                _SerialPort.DtrEnable = IsDTR;
+                _SerialPort.RtsEnable = IsRTS;
                 logger.Log(LogLevel.Debug, "_SerialPort.Open() initiated.");
+
+                OutputText = "";
+
+                logger.Log(LogLevel.Info, "Parameter Settings Check: " + SelectedCommPort.DeviceID + ", " + SelectedBaudRate.ToString() + " baud, Parity." + SelectedParity.ToString() + ", " + SelectedDataBits.ToString() + ", StopBits." + SelectedStopBits.ToString() + ", RTS=" + IsRTS.ToString() + ", DTR=" + IsDTR.ToString());
+
+                EnableDisableSettings = false;
             }
             catch (Exception ex)
             {
@@ -469,56 +475,80 @@ namespace SerialComm.ViewModel
                 logger.Log(LogLevel.Error, ex.Message);
                 logger.Log(LogLevel.Debug, "Error above occured at StartListening() method.");
             }
-            _SerialPort.DtrEnable = IsDTR;
-            _SerialPort.RtsEnable = IsRTS;
-
-            OutputText = "";
 
             OnPropertyChanged("CheckConnectionStatus");
-            OnPropertyChanged("SettingsCheck");
-
-            logger.Log(LogLevel.Info, "Parameter Settings Check: " + GetSettingsCheck());
-
-            EnableDisableSettings = false;
+            WindowTitle = AppTitle + " (" + CheckConnectionStatus + ")";
         }
 
+        /// <summary>
+        /// Allow/disallow StartListening() to be executed.
+        /// </summary>
+        /// <returns>True/False</returns>
         private bool StartListeningCanExecute()
         {
-            return _SerialPort == null || !_SerialPort.IsOpen;
+            if (CommPorts == null)
+            {
+                return false;
+            }
+            else
+            {
+                if (_SerialPort == null || !_SerialPort.IsOpen)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
         }
 
+        /// <summary>
+        /// Terminate serial port communication.
+        /// </summary>
         private void StopListening()
         {
-            _SerialPort.Close();
+            try
+            {
+                _SerialPort.Close();
+                logger.Log(LogLevel.Debug, "_SerialPort.Close() initiated.");
+                EnableDisableSettings = true;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                logger.Log(LogLevel.Error, ex.Message);
+                logger.Log(LogLevel.Debug, "Error above occured at StopListening() method.");
+            }
+
             OnPropertyChanged("CheckConnectionStatus");
-            OnPropertyChanged("SettingsCheck");
-
-            logger.Log(LogLevel.Debug, "_SerialPort.Close() initiated.");
-
-            EnableDisableSettings = true;
+            WindowTitle = AppTitle + " (" + CheckConnectionStatus + ")";
         }
 
-        private bool StopListeningCanExecute()
-        {
-            return _SerialPort != null && _SerialPort.IsOpen;
-        }
-
+        /// <summary>
+        /// Get connection/communication status.
+        /// </summary>
+        /// <returns>String of Connected/Disconnect</returns>
         private string GetConnectionStatus()
         {
             if (_SerialPort != null && _SerialPort.IsOpen)
                 return "Connected";
             else
-                return "Disconnected";
+                return "Not Connected";
         }
 
-        private void ClearOutputText()
+        private void RefreshPortsMethod()
         {
-            OutputText = "";
-        }
-
-        private void OpenLinkMethod()
-        {
-            System.Diagnostics.Process.Start("https://github.com/heiswayi/SerialComm");
+            try
+            {
+                CommPorts = SerialPortSettingsModel.Instance.GetCommPorts();
+                SelectedCommPort = CommPorts[0];
+            }
+            catch (Exception ex)
+            {
+                logger.Log(LogLevel.Error, ex.Message);
+                logger.Log(LogLevel.Debug, "Error above occured when something's wrong with ManagementClass(\"Win32_SerialPort\") on COM* ports refresh.");
+            }
         }
         #endregion
     }
