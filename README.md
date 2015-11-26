@@ -2,7 +2,7 @@
 
 **SerialComm Monitor** is a serial communication application based on `SerialPort` class, built in C# WPF with MVVM design pattern to send (write) or receive (read) data string to/from a serial communication physical interface connected via RS232 or USB to the computer (Windows OS).
 
-![Screenshot](http://i.imgur.com/FSliKIX.png)
+![Screenshot](http://i.imgur.com/JAXh0rl.png)
 
 ## Downloads
 
@@ -37,7 +37,7 @@ You can [download and install](http://nlog-project.org/download) it or just add 
 
 ## TODO
 
-- [ ] Auto populate COM* ports on refresh button
+- [x] Auto populate COM* ports on refresh button
 - [ ] Ability to save output data into a text file
 - [ ] Add more settings; Handshake, CTS and DSR
 - [ ] Ability to send data within interval time set
