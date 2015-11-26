@@ -149,7 +149,8 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Helper\TextBoxAutomaticScrollingExtension.cs" />
-    <Compile Include="Model\SerialCommModel.cs" />
+    <Compile Include="Model\SerialPortSettingsModel.cs" />
+    <Compile Include="Model\SingletonBase.cs" />
     <Compile Include="ViewModel\RelayCommand.cs" />
     <Compile Include="ViewModel\SerialCommViewModel.cs" />
     <Compile Include="ViewModel\ViewModelBase.cs" />

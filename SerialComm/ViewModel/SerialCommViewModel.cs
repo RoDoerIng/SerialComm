@@ -22,17 +22,17 @@ namespace SerialComm.ViewModel
         private string _OutputText;
         private string _SettingsCheck;
         private string _CheckConnectionStatus;
-        private ObservableCollection<CommPort> _CommPorts;
-        private CommPort _SelectedCommPort;
-        private List<SerialCommModel> _BaudRates;
+        private ObservableCollection<SerialPortSettingsModel.CommPort> _CommPorts;
+        private SerialPortSettingsModel.CommPort _SelectedCommPort;
+        private List<SerialPortSettingsModel> _BaudRates;
         private int _SelectedBaudRate;
-        private List<SerialCommModel> _Parities;
+        private List<SerialPortSettingsModel> _Parities;
         private Parity _SelectedParity;
-        private List<SerialCommModel> _StopBitsList;
+        private List<SerialPortSettingsModel> _StopBitsList;
         private StopBits _SelectedStopBits;
         private int[] _DataBits;
         private int _SelectedDataBits;
-        private List<SerialCommModel> _LineEndings;
+        private List<SerialPortSettingsModel> _LineEndings;
         private string _SelectedLineEnding;
         private bool _IsDTR;
         private bool _IsRTS;
@@ -85,7 +85,7 @@ namespace SerialComm.ViewModel
             }
         }
 
-        public ObservableCollection<CommPort> CommPorts
+        public ObservableCollection<SerialPortSettingsModel.CommPort> CommPorts
         {
             get
             {
@@ -98,7 +98,7 @@ namespace SerialComm.ViewModel
             }
         }
 
-        public CommPort SelectedCommPort
+        public SerialPortSettingsModel.CommPort SelectedCommPort
         {
             get { return _SelectedCommPort; }
             set
@@ -109,7 +109,7 @@ namespace SerialComm.ViewModel
             }
         }
 
-        public List<SerialCommModel> BaudRates
+        public List<SerialPortSettingsModel> BaudRates
         {
             get { return _BaudRates; }
             set
@@ -130,7 +130,7 @@ namespace SerialComm.ViewModel
             }
         }
 
-        public List<SerialCommModel> Parities
+        public List<SerialPortSettingsModel> Parities
         {
             get { return _Parities; }
             set
@@ -151,7 +151,7 @@ namespace SerialComm.ViewModel
             }
         }
         
-        public List<SerialCommModel> StopBitsList
+        public List<SerialPortSettingsModel> StopBitsList
         {
             get { return _StopBitsList; }
             set
@@ -193,7 +193,7 @@ namespace SerialComm.ViewModel
             }
         }
         
-        public List<SerialCommModel> LineEndings
+        public List<SerialPortSettingsModel> LineEndings
         {
             get { return _LineEndings; }
             set
@@ -351,16 +351,15 @@ namespace SerialComm.ViewModel
 
             SelectedCommPort = CommPorts[0];
 
-            SerialCommModel _SerialCommModel = new SerialCommModel();
-            BaudRates = _SerialCommModel.getBaudRates();
+            BaudRates = SerialPortSettingsModel.Instance.getBaudRates();
             SelectedBaudRate = 9600; // Default
-            LineEndings = _SerialCommModel.getLineEndings();
+            LineEndings = SerialPortSettingsModel.Instance.getLineEndings();
             SelectedLineEnding = "";
-            Parities = _SerialCommModel.getParities();
+            Parities = SerialPortSettingsModel.Instance.getParities();
             SelectedParity = Parity.None;
-            StopBitsList = _SerialCommModel.getStopBits();
+            StopBitsList = SerialPortSettingsModel.Instance.getStopBits();
             SelectedStopBits = StopBits.One;
-            DataBits = _SerialCommModel.getDataBits;
+            DataBits = SerialPortSettingsModel.Instance.getDataBits;
             SelectedDataBits = 8;
 
             AutoscrollChecked = true;
@@ -419,14 +418,14 @@ namespace SerialComm.ViewModel
             return "PortName = " + getPort.ToString() + " | BaudRate = " + getBaud.ToString() + " | Parity = " + getParity.ToString() + " | DataBits = " + getDataBits.ToString() + " | StopBits = " + getStopBits.ToString() + " | ConnectionStatus = " + getConn + " | DTR = " + IsDTR + " | RTS = " + IsRTS + " | Autoscroll = " + AutoscrollChecked.ToString();
         }
 
-        private ObservableCollection<CommPort> GetCommPorts()
+        private ObservableCollection<SerialPortSettingsModel.CommPort> GetCommPorts()
         {
-            var results = new ObservableCollection<CommPort>();
+            var results = new ObservableCollection<SerialPortSettingsModel.CommPort>();
             var mc = new ManagementClass("Win32_SerialPort");
 
             foreach (var m in mc.GetInstances()) using (m)
                 {
-                    results.Add(new CommPort()
+                    results.Add(new SerialPortSettingsModel.CommPort()
                         {
                             DeviceID = (string)m.GetPropertyValue("DeviceID"),
                             Description = (string)m.GetPropertyValue("Caption")
