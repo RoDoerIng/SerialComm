@@ -15,3 +15,10 @@ Features:
 - Line ending options
 - Autoscroll output box
 - Metro-like application skin
+
+## 1.0.1 (2015-11-26)
+
+Workaround:
+
+- Optimized Model
+- Added SingletonBase class to SerialPortSettingsModel.cs
