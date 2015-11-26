@@ -21,4 +21,4 @@ Features:
 Workaround:
 
 - Optimized Model code
-- Added `SingletonBase` class to SerialPortSettingsModel.cs
+- Added `SingletonBase` class
