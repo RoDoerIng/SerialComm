@@ -1,3 +1,25 @@
+## 1.1.1 (2015-11-27)
+
+New features added:
+
+- Refresh button to repopulate COM* ports
+
+Workaround:
+
+- Made some changes to XAML.
+- Optimized ViewModel and some code restructuring.
+
+Bugfixes:
+
+- Fixed exception error when no port is present.
+
+## 1.0.1 (2015-11-26)
+
+Workaround:
+
+- Optimized Model code
+- Added `SingletonBase` class
+
 ## 1.0.0 (2015-11-25)
 
 Features:
@@ -15,10 +37,3 @@ Features:
 - Line ending options
 - Autoscroll output box
 - Metro-like application skin
-
-## 1.0.1 (2015-11-26)
-
-Workaround:
-
-- Optimized Model code
-- Added `SingletonBase` class
