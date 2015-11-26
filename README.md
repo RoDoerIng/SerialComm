@@ -53,6 +53,12 @@ If you have any question regarding this project, or found a bug in the source co
 
 To contribute to the code, **fork** this repository (`master` branch), realize your ideas, and then **create a new pull request**.
 
+## Semantic Versioning
+
+```
+MAJOR.MINOR.PATCH
+```
+
 ## License
 
 Develop by [Heiswayi Nrird](http://heiswayi.github.io) and released as an open source software under [MIT license](LICENSE.md).
