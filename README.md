@@ -23,20 +23,13 @@ You can [download and install](http://nlog-project.org/download) it or just add 
 
 ## Features
 
-- Available serial port settings
-  - Selectable COM* ports
-  - Selectable baud rates
-  - Selectable parities
-  - Selectable data bits
-  - Selectable stop bits
-  - Enable/disable Data Terminal Ready (DTR)
-  - Enable/disable Request To Send (RTS)
+- Basic serial port settings
 - Send (write) data string to serial port
 - Receive or monitor (read) data sent from serial port
 - Line ending options
 - Autoscroll output box
 - Dark Metro-like application skin
-- Export output data to `.txt` or `.csv`
+- Export output data to a file
 
 ## TODO
 
