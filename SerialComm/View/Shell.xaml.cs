@@ -1,8 +1,6 @@
 ﻿using SerialComm.ViewModel;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -14,17 +12,16 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace SerialComm
+namespace SerialComm.View
 {
     /// <summary>
-    /// Interaction logic for MainWindow.xaml
+    /// Interaction logic for Shell.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class Shell : Window
     {
-        public MainWindow()
+        public Shell()
         {
             // Embedding external DLLs
             AppDomain.CurrentDomain.AssemblyResolve += (sender, args) =>
@@ -41,6 +38,7 @@ namespace SerialComm
             };
 
             InitializeComponent();
+
             SerialCommViewModel viewModel = new SerialCommViewModel();
             this.DataContext = viewModel;
             Closing += viewModel.OnWindowClosing;

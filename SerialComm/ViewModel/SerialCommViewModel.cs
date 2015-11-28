@@ -11,41 +11,52 @@ using System.IO;
 using System.Diagnostics;
 using NLog;
 using System.Windows;
+using System.Reflection;
+using Microsoft.WindowsAPICodePack.Dialogs;
+using System.Text;
 namespace SerialComm.ViewModel
 {
     public class SerialCommViewModel : ViewModelBase
     {
         #region Private Fields
-        private static string AppTitle = "SerialComm Monitor V1";
+        private static string AppTitle = "SerialComm Monitor V2";
         private static Logger logger;
         private SerialPort _SerialPort;
-        private string _InputText;
-        private string _OutputText;
-        private string _CheckConnectionStatus;
-        private string _WindowTitle;
         private ObservableCollection<SerialPortSettingsModel.CommPort> _CommPorts;
         private SerialPortSettingsModel.CommPort _SelectedCommPort;
         private List<SerialPortSettingsModel> _BaudRates;
-        private int _SelectedBaudRate;
         private List<SerialPortSettingsModel> _Parities;
         private Parity _SelectedParity;
         private List<SerialPortSettingsModel> _StopBitsList;
         private StopBits _SelectedStopBits;
-        private int[] _DataBits;
-        private int _SelectedDataBits;
         private List<SerialPortSettingsModel> _LineEndings;
+        private DispatcherTimer timer = null;
+        private int[] _DataBits;
+        private int _SelectedBaudRate;
+        private int _SelectedDataBits;
+        private string[] _FileExtensions;
+        private string _SelectedFileExtension;
+        private string _FileName;
+        private string _ExportStatus;
+        private string _InputText;
+        private string _OutputText;
+        private string _WindowTitle;
         private string _SelectedLineEnding;
+        private string _FileLocation;
         private bool _IsDTR;
         private bool _IsRTS;
         private bool _IsAutoscrollChecked;
         private bool _AutoscrollChecked;
         private bool _EnableDisableSettings;
+        private bool _ExportStatusSuccess;
         private ICommand _Open;
         private ICommand _Close;
         private ICommand _Send;
         private ICommand _Clear;
         private ICommand _OpenLink;
         private ICommand _RefreshPorts;
+        private ICommand _ChangeFileLocation;
+        private ICommand _ExportTXTFile;
         #endregion
 
         #region Public Properties
@@ -66,15 +77,6 @@ namespace SerialComm.ViewModel
             {
                 _OutputText = value;
                 OnPropertyChanged("OutputText");
-            }
-        }
-
-        public string CheckConnectionStatus
-        {
-            get
-            {
-                _CheckConnectionStatus = GetConnectionStatus();
-                return _CheckConnectionStatus;
             }
         }
 
@@ -278,6 +280,78 @@ namespace SerialComm.ViewModel
                 OnPropertyChanged("EnableDisableSettings");
             }
         }
+
+        public string FileLocation
+        {
+            get { return _FileLocation; }
+            set
+            {
+                _FileLocation = value;
+                OnPropertyChanged("FileLocation");
+            }
+        }
+
+        public static string AssemblyDirectory
+        {
+            get
+            {
+                string codeBase = Assembly.GetExecutingAssembly().CodeBase;
+                UriBuilder uri = new UriBuilder(codeBase);
+                string path = Uri.UnescapeDataString(uri.Path);
+                return Path.GetDirectoryName(path);
+            }
+        }
+
+        public string[] FileExtensions
+        {
+            get { return _FileExtensions; }
+            set
+            {
+                _FileExtensions = value;
+                OnPropertyChanged("FileExtensions");
+            }
+        }
+
+        public string SelectedFileExtension
+        {
+            get { return _SelectedFileExtension; }
+            set
+            {
+                _SelectedFileExtension = value;
+                OnPropertyChanged("SelectedFileExtension");
+            }
+        }
+
+        public string FileName
+        {
+            get { return _FileName; }
+            set
+            {
+                _FileName = value;
+                OnPropertyChanged("FileName");
+                OnPropertyChanged("ExportFile");
+            }
+        }
+
+        public string ExportStatus
+        {
+            get { return _ExportStatus; }
+            set
+            {
+                _ExportStatus = value;
+                OnPropertyChanged("ExportStatus");
+            }
+        }
+
+        public bool ExportStatusSuccess
+        {
+            get { return _ExportStatusSuccess; }
+            set
+            {
+                _ExportStatusSuccess = value;
+                OnPropertyChanged("ExportStatusSuccess");
+            }
+        }
         #endregion
 
         #region Public ICommands
@@ -344,13 +418,34 @@ namespace SerialComm.ViewModel
                 return _RefreshPorts;
             }
         }
+
+        public ICommand ChangeFileLocation
+        {
+            get
+            {
+                _ChangeFileLocation = new RelayCommand(
+                    param => ChangeFileLocationMethod());
+                return _ChangeFileLocation;
+            }
+        }
+
+        public ICommand ExportFile
+        {
+            get
+            {
+                _ExportTXTFile = new RelayCommand(
+                    param => ExportFileMethod(),
+                    param => ExportFileCanExecute());
+                return _ExportTXTFile;
+            }
+        }
         #endregion
 
         #region Constructor
         public SerialCommViewModel()
         {
             logger = LogManager.GetCurrentClassLogger();
-            logger.Log(LogLevel.Debug, "Application started.");
+            logger.Log(LogLevel.Info, "Application started.");
 
             try
             {
@@ -358,28 +453,29 @@ namespace SerialComm.ViewModel
             }
             catch (Exception ex)
             {
-                logger.Log(LogLevel.Error, ex.Message);
-                logger.Log(LogLevel.Debug, "Error above occured when something's wrong with ManagementClass(\"Win32_SerialPort\") on application startup.");
+                logger.Log(LogLevel.Error, ex.ToString());
             }
-            if (CommPorts != null) SelectedCommPort = CommPorts[0];
             BaudRates = SerialPortSettingsModel.Instance.getBaudRates();
-            SelectedBaudRate = 9600; // Default
-            LineEndings = SerialPortSettingsModel.Instance.getLineEndings();
-            SelectedLineEnding = "";
             Parities = SerialPortSettingsModel.Instance.getParities();
-            SelectedParity = Parity.None;
-            StopBitsList = SerialPortSettingsModel.Instance.getStopBits();
-            SelectedStopBits = StopBits.One;
             DataBits = SerialPortSettingsModel.Instance.getDataBits;
-            SelectedDataBits = 8;
+            StopBitsList = SerialPortSettingsModel.Instance.getStopBits();
+            LineEndings = SerialPortSettingsModel.Instance.getLineEndings();
+            FileExtensions = FileExportSettingsModel.Instance.getFileExtensions;
 
+            // Set default values
+            if (CommPorts != null) SelectedCommPort = CommPorts[0];
+            SelectedBaudRate = 9600;
+            SelectedParity = Parity.None;
+            SelectedDataBits = 8;
+            SelectedStopBits = StopBits.One;
+            SelectedLineEnding = "\n";
             AutoscrollChecked = true;
             IsDTR = true;
             IsRTS = true;
-
-            OnPropertyChanged("CheckConnectionStatus");
-            WindowTitle = AppTitle + " (" + CheckConnectionStatus + ")";
-
+            FileLocation = AssemblyDirectory;
+            SelectedFileExtension = FileExtensions[0];
+            FileName = "output_data";
+            WindowTitle = AppTitle + " (" + GetConnectionStatus() + ")";
             EnableDisableSettings = true;
         }
         #endregion
@@ -395,12 +491,22 @@ namespace SerialComm.ViewModel
             try
             {
                 var receivedInput = _SerialPort.ReadLine();
-                OutputText += receivedInput + SelectedLineEnding;
+                OutputText += receivedInput.ToString() + SelectedLineEnding;
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                logger.Log(LogLevel.Error, ex.Message);
+                logger.Log(LogLevel.Error, ex.ToString());
+            }
+        }
+
+        private void TimerTick(object send, EventArgs e)
+        {
+            if (timer != null)
+            {
+                timer.Stop();
+                timer = null;
+                ExportStatus = "";
             }
         }
         #endregion
@@ -424,8 +530,7 @@ namespace SerialComm.ViewModel
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                logger.Log(LogLevel.Error, ex.Message);
-                logger.Log(LogLevel.Debug, "Error above occured at OnWindowClosing() method.");
+                logger.Log(LogLevel.Error, ex.ToString());
             }
         }
         #endregion
@@ -444,8 +549,7 @@ namespace SerialComm.ViewModel
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                logger.Log(LogLevel.Error, ex.Message);
-                logger.Log(LogLevel.Debug, "Error above occured at WriteData() method.");
+                logger.Log(LogLevel.Error, ex.ToString());
             }
         }
 
@@ -472,12 +576,10 @@ namespace SerialComm.ViewModel
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                logger.Log(LogLevel.Error, ex.Message);
-                logger.Log(LogLevel.Debug, "Error above occured at StartListening() method.");
+                logger.Log(LogLevel.Error, ex.ToString());
             }
 
-            OnPropertyChanged("CheckConnectionStatus");
-            WindowTitle = AppTitle + " (" + CheckConnectionStatus + ")";
+            WindowTitle = AppTitle + " (" + GetConnectionStatus() + ")";
         }
 
         /// <summary>
@@ -517,12 +619,10 @@ namespace SerialComm.ViewModel
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                logger.Log(LogLevel.Error, ex.Message);
-                logger.Log(LogLevel.Debug, "Error above occured at StopListening() method.");
+                logger.Log(LogLevel.Error, ex.ToString());
             }
 
-            OnPropertyChanged("CheckConnectionStatus");
-            WindowTitle = AppTitle + " (" + CheckConnectionStatus + ")";
+            WindowTitle = AppTitle + " (" + GetConnectionStatus() + ")";
         }
 
         /// <summary>
@@ -546,9 +646,99 @@ namespace SerialComm.ViewModel
             }
             catch (Exception ex)
             {
-                logger.Log(LogLevel.Error, ex.Message);
-                logger.Log(LogLevel.Debug, "Error above occured when something's wrong with ManagementClass(\"Win32_SerialPort\") on COM* ports refresh.");
+                logger.Log(LogLevel.Error, ex.ToString());
             }
+        }
+
+        private void ChangeFileLocationMethod()
+        {
+            var dlg = new CommonOpenFileDialog();
+            dlg.Title = "File Location";
+            dlg.IsFolderPicker = true;
+            dlg.InitialDirectory = FileLocation;
+
+            dlg.AddToMostRecentlyUsedList = false;
+            dlg.AllowNonFileSystemItems = false;
+            dlg.DefaultDirectory = FileLocation;
+            dlg.EnsureFileExists = true;
+            dlg.EnsurePathExists = true;
+            dlg.EnsureReadOnly = false;
+            dlg.EnsureValidNames = true;
+            dlg.Multiselect = false;
+            dlg.ShowPlacesList = true;
+
+            if (dlg.ShowDialog() == CommonFileDialogResult.Ok)
+            {
+                var folder = dlg.FileName;
+                // Do something with selected folder string
+                FileLocation = folder.ToString();
+            }
+        }
+
+        private void ExportFileMethod()
+        {
+            try
+            {
+                if (File.Exists(FileLocation + @"\" + FileName + SelectedFileExtension))
+                {
+                    MessageBoxResult msgBoxResult = MessageBox.Show(
+                        "File " + FileName + SelectedFileExtension + " already exists!\n Select 'Yes' to overwrite the existing file or\n'No' to create a new file with timestamp suffix or\n 'Cancel' to cancel?",
+                        "Overwrite Confirmation",
+                        MessageBoxButton.YesNoCancel);
+                    if (msgBoxResult == MessageBoxResult.Yes)
+                    {
+                        File.WriteAllText(FileLocation + @"\" + FileName + SelectedFileExtension, OutputText);
+                        ExportStatus = "Done.";
+                        ExportStatusSuccess = true;
+                        StartTimer(10);
+
+                    }
+                    else if (msgBoxResult == MessageBoxResult.No)
+                    {
+                        File.WriteAllText(FileLocation + @"\" + FileName + DateTime.Now.ToString("-yyyyMMddHHmmss") + SelectedFileExtension, OutputText);
+                        ExportStatus = "Done.";
+                        ExportStatusSuccess = true;
+                        StartTimer(10);
+                    }
+                    else
+                    {
+                        return;
+                    }
+                }
+                else
+                {
+                    File.WriteAllText(FileLocation + @"\" + FileName + SelectedFileExtension, OutputText);
+                    ExportStatus = "Done.";
+                    ExportStatusSuccess = true;
+                    StartTimer(10);
+                }
+            }
+            catch (Exception ex)
+            {
+                ExportStatus = "Error exporting a file!";
+                ExportStatusSuccess = false;
+                logger.Log(LogLevel.Error, ex.ToString());
+                StartTimer(10);
+                MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private bool ExportFileCanExecute()
+        {
+            return FileName != "";
+        }
+
+        private void StartTimer(int duration)
+        {
+            if (timer != null)
+            {
+                timer.Stop();
+                ExportStatus = "";
+            }
+            timer = new DispatcherTimer();
+            timer.Interval = TimeSpan.FromSeconds(duration);
+            timer.Tick += new EventHandler(TimerTick);
+            timer.Start();
         }
         #endregion
     }

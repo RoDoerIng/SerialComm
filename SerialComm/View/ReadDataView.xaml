@@ -1,0 +1,32 @@
+﻿<UserControl x:Class="SerialComm.View.ReadDataView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:ref="clr-namespace:SerialComm.Helper"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="300">
+    <Grid>
+        <GroupBox Header="READ DATA" Style="{StaticResource GroupBoxStyleOverride}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TextBox Grid.Row="0" ref:TextBoxAutomaticScrollingExtension.ScrollOnTextChanged="{Binding AutoscrollChecked}" Text="{Binding OutputText}" Margin="5" IsReadOnly="True" VerticalScrollBarVisibility="Auto" TextWrapping="Wrap"/>
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <CheckBox Grid.Column="0" VerticalAlignment="Center" VerticalContentAlignment="Center" IsChecked="{Binding IsAutoscrollChecked, Mode=TwoWay}" Content="Autoscroll"
+                                      IsEnabled="False"/>
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                        <Button Content="Clear" Margin="0 0 5 0" Command="{Binding Clear}"/>
+                        <ComboBox HorizontalAlignment="Right" VerticalAlignment="Center" ItemsSource="{Binding LineEndings}" DisplayMemberPath="LineEndingName" SelectedValue="{Binding SelectedLineEnding, Mode=TwoWay}" SelectedValuePath="LineEndingChars" Margin="0 0 5 0"/>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </GroupBox>
+    </Grid>
+</UserControl>
