@@ -1,8 +1,8 @@
-# SerialComm Monitor v1 Source Code
+# SerialComm Monitor v2 Source Code
 
 **SerialComm Monitor** is a serial communication application based on `SerialPort` class, built in C# WPF with MVVM design pattern to send (write) or receive (read) data string to/from a serial communication physical interface connected via RS232 or USB to the computer (Windows OS).
 
-![Screenshot](http://i.imgur.com/JAXh0rl.png)
+![Screenshot](http://i.imgur.com/eSRqhDP.png)
 
 ## Downloads
 
@@ -15,7 +15,9 @@ Go to [**releases page**](https://github.com/heiswayi/SerialComm/releases) for m
 
 ## Dependencies
 
-- [NLog](http://nlog-project.org/)
+- [NLog](http://nlog-project.org/) 4.2.1
+- [Windows 7 API Code Pack - Shell](https://www.nuget.org/packages/Windows7APICodePack-Shell/) 1.1.0
+- [Windows 7 API Code Pack - Core](https://www.nuget.org/packages/Windows7APICodePack-Core/) 1.1.0
 
 You can [download and install](http://nlog-project.org/download) it or just add it through [NuGet](https://www.nuget.org/profiles/jkowalski) in Visual Studio.
 
@@ -34,11 +36,12 @@ You can [download and install](http://nlog-project.org/download) it or just add 
 - Line ending options
 - Autoscroll output box
 - Dark Metro-like application skin
+- Export output data to `.txt` or `.csv`
 
 ## TODO
 
 - [x] Auto populate COM* ports on refresh button
-- [ ] Ability to save output data into a text file
+- [x] Ability to save output data into a text file
 - [ ] Add more settings; Handshake, CTS and DSR
 - [ ] Ability to send data within interval time set
 - [ ] _Still thinking..._
