@@ -1,3 +1,14 @@
+## 2.0.0 (2015-11-28)
+
+New features add:
+
+- Export output data to `.txt` or `.csv` file
+
+Workaround:
+
+- Made some changes to XAML.
+- Optimized overall code.
+
 ## 1.1.1 (2015-11-27)
 
 New features added:
