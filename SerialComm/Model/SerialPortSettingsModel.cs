@@ -5,33 +5,39 @@ using System.IO.Ports;
 using System.Management;
 namespace SerialComm.Model
 {
+    [Serializable]
     public class SerialPortSettingsModel : SingletonBase<SerialPortSettingsModel>
     {
-        private SerialPortSettingsModel()
+        public SerialPortSettingsModel()
         {
         }
 
-        #region Comm. Port
-        public class CommPort
-        {
-            public string DeviceID { get; set; }
-            public string Description { get; set; }
-        }
+        #region Comm. Port    
+        public string DeviceID { get; set; }
+        public string Description { get; set; }
+        public string DeviceInfo { get; set; }
 
-        public ObservableCollection<SerialPortSettingsModel.CommPort> GetCommPorts()
+        public List<SerialPortSettingsModel> getCommPorts()
         {
-            var results = new ObservableCollection<SerialPortSettingsModel.CommPort>();
-            var mc = new ManagementClass("Win32_SerialPort");
+            List<SerialPortSettingsModel> devices = new List<SerialPortSettingsModel>();
 
-            foreach (var m in mc.GetInstances()) using (m)
+            ManagementObjectCollection moc;
+            using (var searcher = new ManagementObjectSearcher(@"Select * From Win32_SerialPort"))
+                moc = searcher.Get();
+
+            foreach (var device in moc)
+            {
+                devices.Add(new SerialPortSettingsModel()
                 {
-                    results.Add(new SerialPortSettingsModel.CommPort()
-                    {
-                        DeviceID = (string)m.GetPropertyValue("DeviceID"),
-                        Description = (string)m.GetPropertyValue("Caption")
-                    });
-                }
-            return results;
+                    DeviceID = (string)device.GetPropertyValue("DeviceID"),
+                    Description = (string)device.GetPropertyValue("Description"),
+                    DeviceInfo = (string)device.GetPropertyValue("Description") + " (" + (string)device.GetPropertyValue("DeviceID") + ")"
+                });
+            }
+
+            moc.Dispose();
+            return devices;
+            
         }
         #endregion
 

@@ -3,8 +3,10 @@ using System.ComponentModel;
 using System.Diagnostics;
 namespace SerialComm.ViewModel
 {
-    public abstract class ViewModelBase : INotifyPropertyChanged
+    public abstract class ViewModelBase : INotifyPropertyChanged, IDisposable
     {
+        protected ViewModelBase() { }
+
         #region Debugging Aides
 
         /// <summary>
@@ -73,5 +75,39 @@ namespace SerialComm.ViewModel
         }
 
         #endregion // INotifyPropertyChanged Members
+
+        #region IDisposable Members
+
+        bool _disposed;
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        ~ViewModelBase()
+        {
+            Dispose(false);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed)
+                return;
+
+            if (disposing)
+            {
+                // free other managed objects that implement
+                // IDisposable only
+            }
+
+            // release any unmanaged objects
+            // set the object references to null
+
+            _disposed = true;
+        }
+
+        #endregion // IDisposable Members
     }
 }

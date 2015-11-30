@@ -13,14 +13,13 @@
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
-                <TextBox Grid.Row="0" ref:TextBoxAutomaticScrollingExtension.ScrollOnTextChanged="{Binding AutoscrollChecked}" Text="{Binding OutputText}" Margin="5" IsReadOnly="True" VerticalScrollBarVisibility="Auto" TextWrapping="Wrap"/>
+                <TextBox Grid.Row="0" x:Name="OutputBox" ref:TextBoxAutomaticScrollingExtension.ScrollOnTextChanged="{Binding ScrollOnTextChanged}" Text="{Binding OutputText}" Margin="5" IsReadOnly="True" VerticalScrollBarVisibility="Auto" TextWrapping="Wrap" FontFamily="Consolas"/>
                 <Grid Grid.Row="1">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <CheckBox Grid.Column="0" VerticalAlignment="Center" VerticalContentAlignment="Center" IsChecked="{Binding IsAutoscrollChecked, Mode=TwoWay}" Content="Autoscroll"
-                                      IsEnabled="False"/>
+                    <CheckBox Grid.Column="0" x:Name="Autoscroll" VerticalAlignment="Center" VerticalContentAlignment="Center" IsChecked="{Binding IsAutoscrollChecked, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Content="{Binding ScrollConfirm}" IsEnabled="False"/>
                     <StackPanel Grid.Column="1" Orientation="Horizontal">
                         <Button Content="Clear" Margin="0 0 5 0" Command="{Binding Clear}"/>
                         <ComboBox HorizontalAlignment="Right" VerticalAlignment="Center" ItemsSource="{Binding LineEndings}" DisplayMemberPath="LineEndingName" SelectedValue="{Binding SelectedLineEnding, Mode=TwoWay}" SelectedValuePath="LineEndingChars" Margin="0 0 5 0"/>

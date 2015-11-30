@@ -1,4 +1,5 @@
 ﻿using SerialComm.Model;
+using SerialComm.Helper;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -20,35 +21,11 @@ namespace SerialComm.ViewModel
     {
         #region Private Fields
         private static string AppTitle = "SerialComm Monitor V2";
-        private static Logger logger;
+        private static Logger logger = LogManager.GetCurrentClassLogger();
         private SerialPort _SerialPort;
-        private ObservableCollection<SerialPortSettingsModel.CommPort> _CommPorts;
-        private SerialPortSettingsModel.CommPort _SelectedCommPort;
-        private List<SerialPortSettingsModel> _BaudRates;
-        private List<SerialPortSettingsModel> _Parities;
-        private Parity _SelectedParity;
-        private List<SerialPortSettingsModel> _StopBitsList;
-        private StopBits _SelectedStopBits;
-        private List<SerialPortSettingsModel> _LineEndings;
         private DispatcherTimer timer = null;
-        private int[] _DataBits;
-        private int _SelectedBaudRate;
-        private int _SelectedDataBits;
-        private string[] _FileExtensions;
-        private string _SelectedFileExtension;
-        private string _FileName;
-        private string _ExportStatus;
-        private string _InputText;
-        private string _OutputText;
-        private string _WindowTitle;
-        private string _SelectedLineEnding;
-        private string _FileLocation;
-        private bool _IsDTR;
-        private bool _IsRTS;
-        private bool _IsAutoscrollChecked;
-        private bool _AutoscrollChecked;
-        private bool _EnableDisableSettings;
-        private bool _ExportStatusSuccess;
+        private string _FileName = "output_data";
+        private bool _IsAutoscrollChecked = true;
         private ICommand _Open;
         private ICommand _Close;
         private ICommand _Send;
@@ -60,237 +37,25 @@ namespace SerialComm.ViewModel
         #endregion
 
         #region Public Properties
-        public string InputText
-        {
-            get { return _InputText; }
-            set
-            {
-                _InputText = value;
-                OnPropertyChanged("InputText");
-            }
-        }
-
-        public string OutputText
-        {
-            get { return _OutputText; }
-            set
-            {
-                _OutputText = value;
-                OnPropertyChanged("OutputText");
-            }
-        }
-
-        public string WindowTitle
-        {
-            get { return _WindowTitle; }
-            set
-            {
-                _WindowTitle = value;
-                OnPropertyChanged("WindowTitle");
-            }
-        }
-
-        public ObservableCollection<SerialPortSettingsModel.CommPort> CommPorts
-        {
-            get { return _CommPorts; }
-            set
-            {
-                _CommPorts = value;
-                OnPropertyChanged("CommPorts");
-            }
-        }
-
-        public SerialPortSettingsModel.CommPort SelectedCommPort
-        {
-            get { return _SelectedCommPort; }
-            set
-            {
-                _SelectedCommPort = value;
-                OnPropertyChanged("SelectedCommPort");
-            }
-        }
-
-        public List<SerialPortSettingsModel> BaudRates
-        {
-            get { return _BaudRates; }
-            set
-            {
-                _BaudRates = value;
-                OnPropertyChanged("BaudRates");
-            }
-        }
-
-        public int SelectedBaudRate
-        {
-            get { return _SelectedBaudRate; }
-            set
-            {
-                _SelectedBaudRate = value;
-                OnPropertyChanged("SelectedBaudRate");
-            }
-        }
-
-        public List<SerialPortSettingsModel> Parities
-        {
-            get { return _Parities; }
-            set
-            {
-                _Parities = value;
-                OnPropertyChanged("Parities");
-            }
-        }
-        
-        public Parity SelectedParity
-        {
-            get { return _SelectedParity; }
-            set
-            {
-                _SelectedParity = value;
-                OnPropertyChanged("SelectedParity");
-            }
-        }
-        
-        public List<SerialPortSettingsModel> StopBitsList
-        {
-            get { return _StopBitsList; }
-            set
-            {
-                _StopBitsList = value;
-                OnPropertyChanged("StopBitsList");
-            }
-        }
-        
-        public StopBits SelectedStopBits
-        {
-            get { return _SelectedStopBits; }
-            set
-            {
-                _SelectedStopBits = value;
-                OnPropertyChanged("SelectedStopBits");
-            }
-        }
-        
-        public int[] DataBits
-        {
-            get { return _DataBits; }
-            set
-            {
-                _DataBits = value;
-                OnPropertyChanged("DataBits");
-            }
-        }
-        
-        public int SelectedDataBits
-        {
-            get { return _SelectedDataBits; }
-            set
-            {
-                _SelectedDataBits = value;
-                OnPropertyChanged("SelectedDataBits");
-            }
-        }
-        
-        public List<SerialPortSettingsModel> LineEndings
-        {
-            get { return _LineEndings; }
-            set
-            {
-                _LineEndings = value;
-                OnPropertyChanged("LineEndings");
-            }
-        }
-        
-        public string SelectedLineEnding
-        {
-            get { return _SelectedLineEnding; }
-            set
-            {
-                _SelectedLineEnding = value;
-                OnPropertyChanged("SelectedLineEnding");
-            }
-        }
-        
-        public bool IsDTR
-        {
-            get { return _IsDTR; }
-            set
-            {
-                _IsDTR = value;
-                OnPropertyChanged("IsDTR");
-            }
-        }
-        
-        public bool IsRTS
-        {
-            get { return _IsRTS; }
-            set
-            {
-                _IsRTS = value;
-                OnPropertyChanged("IsRTS");
-            }
-        }
-        
-        public bool IsAutoscrollChecked
-        {
-            get
-            {
-                if (AutoscrollChecked)
-                {
-                    _IsAutoscrollChecked = true;
-                }
-                else
-                {
-                    _IsAutoscrollChecked = false;
-                }
-                return _IsAutoscrollChecked;
-            }
-            set
-            {
-                _IsAutoscrollChecked = value;
-                if (_IsAutoscrollChecked)
-                {
-                    AutoscrollChecked = true;
-                }
-                else
-                {
-                    AutoscrollChecked = false;
-                }
-                OnPropertyChanged("IsAutoscrollChecked");
-                OnPropertyChanged("AutoscrollChecked");
-            }
-        }
-        
-        public bool AutoscrollChecked
-        {
-            get { return _AutoscrollChecked; }
-            set
-            {
-                _AutoscrollChecked = value;
-                OnPropertyChanged("AutoscrollChecked");
-                OnPropertyChanged("IsAutoscrollChecked");
-            }
-        }
-
-        public bool EnableDisableSettings
-        {
-            get { return _EnableDisableSettings; }
-            set
-            {
-                _EnableDisableSettings = value;
-                OnPropertyChanged("EnableDisableSettings");
-            }
-        }
-
-        public string FileLocation
-        {
-            get { return _FileLocation; }
-            set
-            {
-                _FileLocation = value;
-                OnPropertyChanged("FileLocation");
-            }
-        }
-
+        public string InputText { get; private set; }
+        public string OutputText { get; private set; }
+        public string WindowTitle { get; private set; }
+        public List<SerialPortSettingsModel> CommPorts { get; private set; }
+        public SerialPortSettingsModel SelectedCommPort { get; private set; }
+        public List<SerialPortSettingsModel> BaudRates { get; private set; }
+        public int SelectedBaudRate { get; private set; }
+        public List<SerialPortSettingsModel> Parities { get; private set; }
+        public Parity SelectedParity { get; private set; }
+        public List<SerialPortSettingsModel> StopBitsList { get; private set; }
+        public StopBits SelectedStopBits { get; private set; }
+        public int[] DataBits { get; private set; }
+        public int SelectedDataBits { get; private set; }
+        public List<SerialPortSettingsModel> LineEndings { get; private set; }
+        public string SelectedLineEnding { get; private set; }
+        public bool IsDTR { get; private set; }
+        public bool IsRTS { get; private set; }
+        public bool EnableDisableSettings { get; private set; }
+        public string FileLocation { get; private set; }
         public static string AssemblyDirectory
         {
             get
@@ -301,55 +66,51 @@ namespace SerialComm.ViewModel
                 return Path.GetDirectoryName(path);
             }
         }
-
-        public string[] FileExtensions
-        {
-            get { return _FileExtensions; }
-            set
-            {
-                _FileExtensions = value;
-                OnPropertyChanged("FileExtensions");
-            }
-        }
-
-        public string SelectedFileExtension
-        {
-            get { return _SelectedFileExtension; }
-            set
-            {
-                _SelectedFileExtension = value;
-                OnPropertyChanged("SelectedFileExtension");
-            }
-        }
-
+        public string[] FileExtensions { get; private set; }
+        public string SelectedFileExtension { get; private set; }
         public string FileName
         {
             get { return _FileName; }
             set
             {
                 _FileName = value;
-                OnPropertyChanged("FileName");
                 OnPropertyChanged("ExportFile");
             }
         }
+        public string ExportStatus { get; private set; }
+        public bool ExportStatusSuccess { get; private set; }
 
-        public string ExportStatus
+        // Disable interaction from UI
+        // TODO: Trigger TextBoxAutomaticScrollingExtension.cs or Scroll to
+        //       end the TextBox when CheckBox is checked for second time.
+        public string ScrollConfirm
         {
-            get { return _ExportStatus; }
-            set
+            get
             {
-                _ExportStatus = value;
-                OnPropertyChanged("ExportStatus");
+                // Debug only
+                //return "Autoscroll (" + ScrollOnTextChanged.ToString() + ")";
+                return "Autoscroll";
             }
         }
-
-        public bool ExportStatusSuccess
+        public bool ScrollOnTextChanged { get; private set; }
+        public bool IsAutoscrollChecked
         {
-            get { return _ExportStatusSuccess; }
+            get { return _IsAutoscrollChecked; }
             set
             {
-                _ExportStatusSuccess = value;
-                OnPropertyChanged("ExportStatusSuccess");
+                _IsAutoscrollChecked = value;
+                if (_IsAutoscrollChecked == true)
+                {
+                    ScrollOnTextChanged = true;
+                }
+                else
+                {
+                    ScrollOnTextChanged = false;
+                }
+
+                OnPropertyChanged("IsAutoscrollChecked");
+                OnPropertyChanged("ScrollOnTextChanged");
+                OnPropertyChanged("ScrollConfirm");
             }
         }
         #endregion
@@ -444,23 +205,27 @@ namespace SerialComm.ViewModel
         #region Constructor
         public SerialCommViewModel()
         {
-            logger = LogManager.GetCurrentClassLogger();
-            logger.Log(LogLevel.Info, "Application started.");
+            logger.Log(LogLevel.Info, "--- PROGRAM STARTED ---");
 
+            _SerialPort = new SerialPort();
+            logger.Log(LogLevel.Debug, "New instance of SerialPort() is initialized.");
+
+            // Get lists of settings objects
             try
             {
-                CommPorts = SerialPortSettingsModel.Instance.GetCommPorts();
+                CommPorts = SerialPortSettingsModel.Instance.getCommPorts();
+                BaudRates = SerialPortSettingsModel.Instance.getBaudRates();
+                Parities = SerialPortSettingsModel.Instance.getParities();
+                DataBits = SerialPortSettingsModel.Instance.getDataBits;
+                StopBitsList = SerialPortSettingsModel.Instance.getStopBits();
+                LineEndings = SerialPortSettingsModel.Instance.getLineEndings();
+                FileExtensions = FileExportSettingsModel.Instance.getFileExtensions;
+                logger.Log(LogLevel.Debug, "All lists of settings objects are loaded.");
             }
             catch (Exception ex)
             {
-                logger.Log(LogLevel.Error, ex.ToString());
+                logger.Log(LogLevel.Error, "EXCEPTION raised: " + ex.ToString());
             }
-            BaudRates = SerialPortSettingsModel.Instance.getBaudRates();
-            Parities = SerialPortSettingsModel.Instance.getParities();
-            DataBits = SerialPortSettingsModel.Instance.getDataBits;
-            StopBitsList = SerialPortSettingsModel.Instance.getStopBits();
-            LineEndings = SerialPortSettingsModel.Instance.getLineEndings();
-            FileExtensions = FileExportSettingsModel.Instance.getFileExtensions;
 
             // Set default values
             if (CommPorts != null) SelectedCommPort = CommPorts[0];
@@ -468,15 +233,15 @@ namespace SerialComm.ViewModel
             SelectedParity = Parity.None;
             SelectedDataBits = 8;
             SelectedStopBits = StopBits.One;
-            SelectedLineEnding = "\n";
-            AutoscrollChecked = true;
+            SelectedLineEnding = "";
             IsDTR = true;
             IsRTS = true;
             FileLocation = AssemblyDirectory;
             SelectedFileExtension = FileExtensions[0];
-            FileName = "output_data";
             WindowTitle = AppTitle + " (" + GetConnectionStatus() + ")";
             EnableDisableSettings = true;
+            ScrollOnTextChanged = true;
+            logger.Log(LogLevel.Debug, "All default values are set. End of SerialCommViewModel() constructor!");
         }
         #endregion
 
@@ -488,15 +253,25 @@ namespace SerialComm.ViewModel
         /// <param name="e"></param>
         private void DataReceivedEvent(object sender, SerialDataReceivedEventArgs e)
         {
-            try
+            if (_SerialPort.IsOpen)
             {
-                var receivedInput = _SerialPort.ReadLine();
-                OutputText += receivedInput.ToString() + SelectedLineEnding;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                logger.Log(LogLevel.Error, ex.ToString());
+                try
+                {
+                    //string inData = _SerialPort.ReadLine();
+                    //OutputText += inData.ToString() + SelectedLineEnding;
+                    //OnPropertyChanged("OutputText");
+
+                    byte[] data = new byte[_SerialPort.BytesToRead];
+                    _SerialPort.Read(data, 0, data.Length);
+                    string s = Encoding.GetEncoding("Windows-1252").GetString(data);
+                    OutputText += s + SelectedLineEnding;
+                    OnPropertyChanged("OutputText");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    logger.Log(LogLevel.Error, "EXCEPTION raised: " + ex.ToString());
+                }
             }
         }
 
@@ -507,6 +282,7 @@ namespace SerialComm.ViewModel
                 timer.Stop();
                 timer = null;
                 ExportStatus = "";
+                OnPropertyChanged("ExportStatus");
             }
         }
         #endregion
@@ -523,14 +299,16 @@ namespace SerialComm.ViewModel
             {
                 if (_SerialPort != null && _SerialPort.IsOpen)
                 {
+                    _SerialPort.DataReceived -= DataReceivedEvent;
+                    _SerialPort.Dispose();
                     _SerialPort.Close();
-                    logger.Log(LogLevel.Debug, "_SerialPort.Close() initiated on Application's closing (without pressing STOP COMMUNICATION button).");
+                    logger.Log(LogLevel.Debug, "SerialPort.Dispose() & SerialPort.Close() are executed on OnWindowClosing() method.");
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                logger.Log(LogLevel.Error, ex.ToString());
+                logger.Log(LogLevel.Error, "EXCEPTION raised: " + ex.ToString());
             }
         }
         #endregion
@@ -541,15 +319,19 @@ namespace SerialComm.ViewModel
         /// </summary>
         private void WriteData()
         {
-            try
+            if (_SerialPort.IsOpen)
             {
-                _SerialPort.Write(InputText);
-                InputText = String.Empty;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                logger.Log(LogLevel.Error, ex.ToString());
+                try
+                {
+                    _SerialPort.Write(InputText);
+                    InputText = String.Empty;
+                    OnPropertyChanged("InputText");
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    logger.Log(LogLevel.Error, "EXCEPTION raised: " + ex.ToString());
+                }
             }
         }
 
@@ -560,26 +342,42 @@ namespace SerialComm.ViewModel
         {
             try
             {
-                _SerialPort = new SerialPort(SelectedCommPort.DeviceID, SelectedBaudRate, SelectedParity, SelectedDataBits, SelectedStopBits);
-                _SerialPort.DataReceived += new SerialDataReceivedEventHandler(DataReceivedEvent);
+                if (_SerialPort != null && _SerialPort.IsOpen)
+                {
+                    _SerialPort.Dispose();
+                    _SerialPort.Close();
+                    logger.Log(LogLevel.Debug, "SerialPort.Dispose() & SerialPort.Close() are executed on StartListening() method.");
+                }
+
+                _SerialPort.PortName = SelectedCommPort.DeviceID;
+                _SerialPort.BaudRate = SelectedBaudRate;
+                _SerialPort.Parity = SelectedParity;
+                _SerialPort.DataBits = SelectedDataBits;
+                _SerialPort.StopBits = SelectedStopBits;
                 _SerialPort.Open();
+                logger.Log(LogLevel.Debug, "SerialPort.Open() is executed.");
                 _SerialPort.DtrEnable = IsDTR;
                 _SerialPort.RtsEnable = IsRTS;
-                logger.Log(LogLevel.Debug, "_SerialPort.Open() initiated.");
 
                 OutputText = "";
-
-                logger.Log(LogLevel.Info, "Parameter Settings Check: " + SelectedCommPort.DeviceID + ", " + SelectedBaudRate.ToString() + " baud, Parity." + SelectedParity.ToString() + ", " + SelectedDataBits.ToString() + ", StopBits." + SelectedStopBits.ToString() + ", RTS=" + IsRTS.ToString() + ", DTR=" + IsDTR.ToString());
+                OnPropertyChanged("OutputText");
 
                 EnableDisableSettings = false;
+                OnPropertyChanged("EnableDisableSettings");
+
+                logger.Log(LogLevel.Info, "Connected to: " + SelectedCommPort.DeviceID + ", " + SelectedBaudRate.ToString() + " baud, Parity." + SelectedParity.ToString() + ", " + SelectedDataBits.ToString() + ", StopBits." + SelectedStopBits.ToString() + ", RTS=" + IsRTS.ToString() + ", DTR=" + IsDTR.ToString());
+
+                _SerialPort.DataReceived += new SerialDataReceivedEventHandler(DataReceivedEvent);
+                logger.Log(LogLevel.Debug, "Ready to receive data...");
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                logger.Log(LogLevel.Error, ex.ToString());
+                logger.Log(LogLevel.Error, "EXCEPTION raised: " + ex.ToString());
             }
 
             WindowTitle = AppTitle + " (" + GetConnectionStatus() + ")";
+            OnPropertyChanged("WindowTitle");
         }
 
         /// <summary>
@@ -610,19 +408,28 @@ namespace SerialComm.ViewModel
         /// </summary>
         private void StopListening()
         {
-            try
+            if (_SerialPort != null && _SerialPort.IsOpen)
             {
-                _SerialPort.Close();
-                logger.Log(LogLevel.Debug, "_SerialPort.Close() initiated.");
-                EnableDisableSettings = true;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                logger.Log(LogLevel.Error, ex.ToString());
+                try
+                {
+                    _SerialPort.DataReceived -= DataReceivedEvent;
+                    _SerialPort.Dispose();
+                    _SerialPort.Close();
+
+                    EnableDisableSettings = true;
+                    OnPropertyChanged("EnableDisableSettings");
+
+                    logger.Log(LogLevel.Info, "Disconnected from " + SelectedCommPort.DeviceID);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    logger.Log(LogLevel.Error, "EXCEPTION raised: " + ex.ToString());
+                }
             }
 
             WindowTitle = AppTitle + " (" + GetConnectionStatus() + ")";
+            OnPropertyChanged("WindowTitle");
         }
 
         /// <summary>
@@ -637,16 +444,22 @@ namespace SerialComm.ViewModel
                 return "Not Connected";
         }
 
+        /// <summary>
+        /// Rescan avaiable ports
+        /// </summary>
         private void RefreshPortsMethod()
         {
             try
             {
-                CommPorts = SerialPortSettingsModel.Instance.GetCommPorts();
+                CommPorts = SerialPortSettingsModel.Instance.getCommPorts();
+                OnPropertyChanged("CommPorts");
                 SelectedCommPort = CommPorts[0];
+                OnPropertyChanged("SelectedCommPort");
+                logger.Log(LogLevel.Debug, "New list of COM* ports are repopulated.");
             }
             catch (Exception ex)
             {
-                logger.Log(LogLevel.Error, ex.ToString());
+                logger.Log(LogLevel.Error, "EXCEPTION raised: " + ex.ToString());
             }
         }
 
@@ -672,6 +485,7 @@ namespace SerialComm.ViewModel
                 var folder = dlg.FileName;
                 // Do something with selected folder string
                 FileLocation = folder.ToString();
+                OnPropertyChanged("FileLocation");
             }
         }
 
@@ -688,16 +502,22 @@ namespace SerialComm.ViewModel
                     if (msgBoxResult == MessageBoxResult.Yes)
                     {
                         File.WriteAllText(FileLocation + @"\" + FileName + SelectedFileExtension, OutputText);
+                        logger.Log(LogLevel.Debug, "Output data is saved and exported into " + FileLocation + @"\" + FileName + SelectedFileExtension);
                         ExportStatus = "Done.";
+                        OnPropertyChanged("ExportStatus");
                         ExportStatusSuccess = true;
+                        OnPropertyChanged("ExportStatusSuccess");
                         StartTimer(10);
 
                     }
                     else if (msgBoxResult == MessageBoxResult.No)
                     {
                         File.WriteAllText(FileLocation + @"\" + FileName + DateTime.Now.ToString("-yyyyMMddHHmmss") + SelectedFileExtension, OutputText);
+                        logger.Log(LogLevel.Debug, "Output data is saved and exported into " + FileLocation + @"\" + FileName + DateTime.Now.ToString("-yyyyMMddHHmmss") + SelectedFileExtension);
                         ExportStatus = "Done.";
+                        OnPropertyChanged("ExportStatus");
                         ExportStatusSuccess = true;
+                        OnPropertyChanged("ExportStatusSuccess");
                         StartTimer(10);
                     }
                     else
@@ -708,18 +528,23 @@ namespace SerialComm.ViewModel
                 else
                 {
                     File.WriteAllText(FileLocation + @"\" + FileName + SelectedFileExtension, OutputText);
+                    logger.Log(LogLevel.Debug, "Output data is saved and exported into " + FileLocation + @"\" + FileName + SelectedFileExtension);
                     ExportStatus = "Done.";
+                    OnPropertyChanged("ExportStatus");
                     ExportStatusSuccess = true;
+                    OnPropertyChanged("ExportStatusSuccess");
                     StartTimer(10);
                 }
             }
             catch (Exception ex)
             {
                 ExportStatus = "Error exporting a file!";
+                OnPropertyChanged("ExportStatus");
                 ExportStatusSuccess = false;
-                logger.Log(LogLevel.Error, ex.ToString());
+                OnPropertyChanged("ExportStatusSuccess");
                 StartTimer(10);
                 MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                logger.Log(LogLevel.Error, "EXCEPTION raised: " + ex.ToString());
             }
         }
 
@@ -734,6 +559,7 @@ namespace SerialComm.ViewModel
             {
                 timer.Stop();
                 ExportStatus = "";
+                OnPropertyChanged("ExportStatus");
             }
             timer = new DispatcherTimer();
             timer.Interval = TimeSpan.FromSeconds(duration);
