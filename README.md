@@ -10,7 +10,7 @@ Go to [**releases page**](https://github.com/heiswayi/SerialComm/releases) for m
 
 ## Prerequisites
 
-- [Visual Studio IDE](https://www.visualstudio.com/en-us/downloads/download-visual-studio-vs.aspx) (2013 and above)
+- [Visual Studio IDE](https://www.visualstudio.com/en-us/downloads/download-visual-studio-vs.aspx) (2013 and above) - development
 - [Microsoft .NET Framework 4.5 (x86 and x64)](https://www.microsoft.com/en-us/download/details.aspx?id=30653)
 
 ## Dependencies
@@ -45,9 +45,9 @@ Check [CHANGELOG.md](CHANGELOG.md) file for the detailed development changelogs.
 
 ## Contributions
 
-If you have any question regarding this project, or found a bug in the source code, feel free to [report it here](https://github.com/heiswayi/SerialComm/issues). All you need to do is [create an issue](https://github.com/heiswayi/SerialComm/issues/new) there.
+If you have any question regarding to this project, or found a bug in the source code, feel free to [report it here](https://github.com/heiswayi/SerialComm/issues). All you need to do is [create an issue](https://github.com/heiswayi/SerialComm/issues/new) there.
 
-To contribute to the code, **fork** this repository (`master` branch), realize your ideas, and then **create a new pull request**.
+To contribute to the source code, **fork** this repository (`master` branch), realize your ideas, and then **create a new pull request**.
 
 ## Semantic Versioning
 
